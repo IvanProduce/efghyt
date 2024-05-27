@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clue 10</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        #begin-button {
+            font-size: 24px;
+            color: white;
+            background-color: transparent;
+            border: 2px solid white;
+            padding: 10px 20px;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="2" fill="white" /></svg>'), auto;
+            outline: none;
+            position: relative;
+            z-index: 3; /* Ensure button is on top */
+        }
+
+        #begin-button.jitter {
+            animation: jitter 0.1s infinite;
+        }
+
+        @keyframes jitter {
+            0% { opacity: 0.2; }
+            25% { opacity: 0.4; }
+            50% { opacity: 0.6; }
+            75% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        #begin-button.fade-out {
+            animation: fadeOut 2s forwards; /* Adjust the duration of the animation */
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        #moth-image {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            opacity: 0;
+            z-index: 1; /* Ensure moth image is below black screen */
+        }
+
+        #moth-image.jitter {
+            display: block;
+            animation: jitterOpacity 0.1s infinite;
+        }
+
+        @keyframes jitterOpacity {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        #black-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Darken the black screen */
+            opacity: 1;
+            transition: opacity 5s ease-out; /* Adjust the duration of the transition */
+            z-index: 2; /* Ensure black screen is below button and moth image */
+        }
+    </style>
+</head>
+<body>
+    <button id="begin-button">Begin</button>
+    <audio id="ambience-sound" src="ambience1.mp3" autoplay loop></audio>
+    <audio id="game-sound" src="startinggame.mp3"></audio>
+    <audio id="static-sound" src="jitterstatic.mp3"></audio>
+    <img id="moth-image" src="clue10moth.png" alt="Moth Image">
+    <div id="black-screen"></div>
+    <audio id="button-sound" src="button_sound_effect.mp3" preload="auto"></audio>
+    <script>
+        const buttonSound = document.getElementById('button-sound');
+
+        document.getElementById('begin-button').addEventListener('click', function() {
+            const button = this;
+
+            // Play the button sound effect
+            buttonSound.currentTime = 0;
+            buttonSound.play().catch(error => console.error(error));
+
+            // Play the game starting sound
+            const gameSound = document.getElementById('game-sound');
+            gameSound.volume = 1.0;
+            gameSound.play().catch(error => console.error(error));
+
+            // Jitter and fade out the button
+            button.classList.add('jitter');
+            button.classList.add('fade-out');
+            button.style.pointerEvents = 'none'; // Disable button interaction
+
+            // After 7 seconds, show the moth image with static sound
+            setTimeout(function() {
+                const ambienceSound = document.getElementById('ambience-sound');
+                ambienceSound.pause(); // Stop the ambient sound
+
+                const mothImage = document.getElementById('moth-image');
+                const staticSound = document.getElementById('static-sound');
+                staticSound.volume = 0.0; // Start volume at 0
+                staticSound.loop = true;  // Loop the static sound
+                staticSound.play().catch(error => console.error(error));
+                mothImage.classList.add('jitter');
+
+                // Gradually increase the volume of the static sound
+                let volume = 0.0;
+                const fadeInInterval = setInterval(() => {
+                    if (volume < 1.0) {
+                        volume += 0.01;
+                        staticSound.volume = volume;
+                    } else {
+                        clearInterval(fadeInInterval);
+                    }
+                }, 70); // Adjust the interval for a smoother transition
+
+                // After a second, fade out the black screen
+                setTimeout(function() {
+                    const blackScreen = document.getElementById('black-screen');
+                    blackScreen.style.opacity = '0'; // Trigger the fade out transition
+                }, 1000);
+            }, 7000);
+        });
+    </script>
+</body>
+</html>
